@@ -22,5 +22,5 @@ VALUES
 ('Kyle', 'Carter', 2, 1),
 ('Bob', 'Doll', 3, NULL),
 ('Doofus', 'Roofus', 4, 3),
-('Peter', 'Griffin0', 5, null),
+('Peter', 'Griffin', 5, null),
 ('Lois', 'Griffin', 6, 5);
