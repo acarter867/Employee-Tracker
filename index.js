@@ -84,7 +84,7 @@ function viewDepartments() {
 
 // Query for viewing all roles
 function viewRoles() {
-    connection.query(`SELECT role.id, role.title, department.name, role.salary
+    connection.query(`SELECT role.id, role.title, department.name AS department, role.salary
                 FROM role, department
                 WHERE role.department_id = department.id`, (err, res) => {
                     if(err) console.log(err);
@@ -105,7 +105,7 @@ function viewEmployees() {
 };
 
 
-// 
+// add department to database
 function addDepartment() {
     inquirer
         .prompt({
@@ -122,7 +122,7 @@ function addDepartment() {
         })
 }
 
-// Obtain new role information & save to database
+// Add new role to db
 function addRole() {
     connection.query('SELECT * FROM department', function(err, res) {
         if (err) throw (err);
@@ -152,13 +152,11 @@ function addRole() {
               }
           }
           ]) 
-// in order to get the id here, i need a way to grab it from the departments table 
         .then((answer) => {
         const department = answer.departmentName;
-        connection.query('SELECT * FROM DEPARTMENT', function(err, res) {
-        
+        connection.query('SELECT * FROM DEPARTMENT', function(err, res) {        
             if (err) throw (err);
-         let filteredDept = res.filter(function(res) {
+            let filteredDept = res.filter(function(res) {
             return res.name == department;
         }
         )
@@ -172,7 +170,7 @@ function addRole() {
         })
             viewRoles()
             })
-        })
+        }) 
     })
 }
 
@@ -193,7 +191,6 @@ async function addEmployee() {
           {
             name: "roleName",
             type: "list",
-// is there a way to make the options here the results of a query that selects all departments?`
             message: "What role does the employee have?",
             choices: function() {
              rolesArray = [];
@@ -208,7 +205,6 @@ async function addEmployee() {
           ]) 
 // in order to get the id here, i need a way to grab it from the departments table 
         .then((answer) => {
-        console.log(answer);
         const role = answer.roleName;
         connection.query('SELECT * FROM role', function(err, res) {
             if (err) throw (err);
@@ -233,27 +229,29 @@ async function addEmployee() {
                             return managersArray;
                         }
                     }
+
+                    //Get manager id,
                 ]).then((managerAnswer) => {
-                    const manager = managerAnswer.manager;
-                    connection.query('SELECT * FROM employee', function(err, res) {
-                        if (err) throw (err);
-                        let filteredManager = res.filter(function(res) {
-                           return res.last_name == manager;
+                    const manager = managerAnswer.manager.split(" ");
+                    const managerFirstName = manager[0];
+                    const managerLastName = manager[1];
+                
+                    connection.query(`SELECT employee.id 
+                                    FROM employee
+                                    WHERE employee.first_name = "${managerFirstName}" AND employee.last_name = "${managerLastName}";`, (err, res) => {
+                        if(err) console.log(err);
+                        const manager_id = res[0].id;
+                        connection.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                                        VALUES ('${answer.firstName}', '${answer.lastName}', ${roleId}, ${manager_id})`, (err, res) => {
+                                            if(err) console.log(err);
+                                            console.log(`${answer.firstName} ${answer.lastName} has been added to the roster!`);
+                            viewEmployees();
                         })
-                        let managerId = filteredManager[0].id;
-                        console.log(managerAnswer);
-                        let query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)";
-                        let values = [answer.firstName, answer.lastName, roleId, managerId]
-                        console.log(values);
-                        connection.query(query, values, (err, res, fields) => {
-                             console.log(`You have added this employee: ${(values[0]).toUpperCase()}.`)
-                        })
-                        viewEmployees();
-                        })
-                     })
+                    })
                 })
             })
         })
+    })
 })
 }
 
