@@ -205,7 +205,6 @@ async function addEmployee() {
           ]) 
 // in order to get the id here, i need a way to grab it from the departments table 
         .then((answer) => {
-        console.log(answer);
         const role = answer.roleName;
         connection.query('SELECT * FROM role', function(err, res) {
             if (err) throw (err);
@@ -230,27 +229,29 @@ async function addEmployee() {
                             return managersArray;
                         }
                     }
+
+                    //Get manager id,
                 ]).then((managerAnswer) => {
-                    const manager = managerAnswer.manager;
-                    connection.query('SELECT * FROM employee', function(err, res) {
-                        if (err) throw (err);
-                        let filteredManager = res.filter(function(res) {
-                           return res.last_name == manager;
+                    const manager = managerAnswer.manager.split(" ");
+                    const managerFirstName = manager[0];
+                    const managerLastName = manager[1];
+                
+                    connection.query(`SELECT employee.id 
+                                    FROM employee
+                                    WHERE employee.first_name = "${managerFirstName}" AND employee.last_name = "${managerLastName}";`, (err, res) => {
+                        if(err) console.log(err);
+                        const manager_id = res[0].id;
+                        connection.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                                        VALUES ('${answer.firstName}', '${answer.lastName}', ${roleId}, ${manager_id})`, (err, res) => {
+                                            if(err) console.log(err);
+                                            console.log(`${answer.firstName} ${answer.lastName} has been added to the roster!`);
+                            viewEmployees();
                         })
-                        let managerId = filteredManager[0].id;
-                        console.log(managerAnswer);
-                        let query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)";
-                        let values = [answer.firstName, answer.lastName, roleId, managerId]
-                        console.log(values);
-                        connection.query(query, values, (err, res, fields) => {
-                             console.log(`You have added this employee: ${(values[0]).toUpperCase()}.`)
-                        })
-                        viewEmployees();
-                        })
-                     })
+                    })
                 })
             })
         })
+    })
 })
 }
 
