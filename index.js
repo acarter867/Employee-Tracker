@@ -75,41 +75,34 @@ function init() {
 
 // Query departments
 function viewDepartments() {
-    const query = "SELECT * FROM department";
-      connection.query(query, function(err, res) {
-        console.log(`DEPARTMENTS:`)
-        // For each department, print department id and name 
-        res.forEach(department => {
-            console.log(`ID: ${department.id} | Name: ${department.name}`)
-        })
-        // Back to menu selection
+    connection.query('SELECT * FROM department', (err, res) => {
+        if(err) console.log(err);
+        console.table(res);
         init();
-        });
-    };
+    })
+};
 
 // Query for viewing all roles
 function viewRoles() {
-    var query = "SELECT * FROM role";
-        connection.query(query, function(err, res) {
-            console.log(`ROLES:`)
-        res.forEach(role => {
-            console.log(`ID: ${role.id} | Title: ${role.title} | Salary: ${role.salary} | Department ID: ${role.department_id}`);
-        })
-        init();
-        });
-    };
+    connection.query(`SELECT role.id, role.title, department.name, role.salary
+                FROM role, department
+                WHERE role.department_id = department.id`, (err, res) => {
+                    if(err) console.log(err);
+                    console.table(res)
+                    init();
+    })
+};
 
 // Query to view all employees
 function viewEmployees() {
-    var query = "SELECT * FROM employee";
-        connection.query(query, function(err, res) {
-            console.log(`EMPLOYEES:`)
-        res.forEach(employee => {
-            console.log(`ID: ${employee.id} - Name: ${employee.first_name} ${employee.last_name} - Role ID: ${employee.role_id} - Manager ID: ${employee.manager_id}`);
-        })
+    connection.query(`SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name, role.salary, employee.manager_id
+    FROM employee, role, department    
+    WHERE employee.role_id = role.id and role.department_id = department.id;`, (err, res) => {
+        if(err) console.log(err);
+        console.table(res);
         init();
-        });
-    };
+    })
+};
 
 
 // 
