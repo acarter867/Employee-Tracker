@@ -84,7 +84,7 @@ function viewDepartments() {
 
 // Query for viewing all roles
 function viewRoles() {
-    connection.query(`SELECT role.id, role.title, department.name, role.salary
+    connection.query(`SELECT role.id, role.title, department.name AS department, role.salary
                 FROM role, department
                 WHERE role.department_id = department.id`, (err, res) => {
                     if(err) console.log(err);
@@ -105,7 +105,7 @@ function viewEmployees() {
 };
 
 
-// 
+// add department to database
 function addDepartment() {
     inquirer
         .prompt({
@@ -122,7 +122,7 @@ function addDepartment() {
         })
 }
 
-// Obtain new role information & save to database
+// Add new role to db
 function addRole() {
     connection.query('SELECT * FROM department', function(err, res) {
         if (err) throw (err);
@@ -152,13 +152,11 @@ function addRole() {
               }
           }
           ]) 
-// in order to get the id here, i need a way to grab it from the departments table 
         .then((answer) => {
         const department = answer.departmentName;
-        connection.query('SELECT * FROM DEPARTMENT', function(err, res) {
-        
+        connection.query('SELECT * FROM DEPARTMENT', function(err, res) {        
             if (err) throw (err);
-         let filteredDept = res.filter(function(res) {
+            let filteredDept = res.filter(function(res) {
             return res.name == department;
         }
         )
@@ -172,7 +170,7 @@ function addRole() {
         })
             viewRoles()
             })
-        })
+        }) 
     })
 }
 
@@ -193,7 +191,6 @@ async function addEmployee() {
           {
             name: "roleName",
             type: "list",
-// is there a way to make the options here the results of a query that selects all departments?`
             message: "What role does the employee have?",
             choices: function() {
              rolesArray = [];
