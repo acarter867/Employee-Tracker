@@ -241,6 +241,8 @@ async function addEmployee() {
                                     WHERE employee.first_name = "${managerFirstName}" AND employee.last_name = "${managerLastName}";`, (err, res) => {
                         if(err) console.log(err);
                         const manager_id = res[0].id;
+                        //insert employee into table with manager id 
+                        
                         connection.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id)
                                         VALUES ('${answer.firstName}', '${answer.lastName}', ${roleId}, ${manager_id})`, (err, res) => {
                                             if(err) console.log(err);
